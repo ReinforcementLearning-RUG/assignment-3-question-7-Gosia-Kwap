@@ -53,8 +53,17 @@ class MCEvaluator(AbstractEvaluator):
 
     def _update_value_function(self, episode: List[Tuple[int, int, float]]) -> None:
         """
-        Update the value function using the Monte Carlo method.
+        Update the value function using the Monte Carlo first-visit method.
 
         :param episode: A list of (state, action, reward) tuples.
         """
-        pass
+        G = 0
+        discount = self.env.discount_factor
+        T = len(episode)
+        for i in range(T - 1, -1, -1):
+            state = episode[i][0]
+            reward = episode[i][2]
+            G = discount * G + reward
+            if state not in [x[0] for x in episode[:i]]:
+                self.returns[state].append(G)
+                self.value_fun[state] = np.mean(self.returns[state])
